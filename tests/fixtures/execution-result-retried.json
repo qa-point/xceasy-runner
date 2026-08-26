@@ -1,0 +1,14 @@
+{
+  "uuid": "result-retried",
+  "fullName": "BannerTests/testMissing()",
+  "name": "testMissing()",
+  "status": "passed",
+  "stage": "finished",
+  "start": 3,
+  "stop": 4,
+  "labels": [
+    {"name": "xceasy.device_id", "value": "device-1"},
+    {"name": "xceasy.shard_index", "value": "0"},
+    {"name": "xceasy.attempt", "value": "2"}
+  ]
+}

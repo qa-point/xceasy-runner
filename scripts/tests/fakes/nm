@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+index=0
+while [ "$index" -lt 100 ]; do
+    printf 'StressUITests.StressSuite.test%s() -> ()\n' "$index"
+    index=$((index + 1))
+done

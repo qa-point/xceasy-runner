@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "run-fixture",
+  "mode": "shard",
+  "test_count": 3,
+  "assignments": [
+    {
+      "shard_index": 0,
+      "device_id": "device-1",
+      "tests": [
+        "SampleUITests/BannerTests/testPassed()",
+        "SampleUITests/BannerTests/testFailed()"
+      ]
+    },
+    {
+      "shard_index": 1,
+      "device_id": "device-2",
+      "tests": [
+        "SampleUITests/BannerTests/testMissing()"
+      ]
+    }
+  ]
+}

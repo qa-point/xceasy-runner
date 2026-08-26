@@ -1,0 +1,71 @@
+# GitHub Releases
+
+Русский · [English](../en/RELEASING_EN.md) · [README](../../README_RU.md)
+
+## Что публикуется
+
+Tag workflow `.github/workflows/release.yml` публикует GitHub Release с:
+
+- universal macOS binary `xceasyctl` (`arm64` + `x86_64`);
+- private runtime tree `libexec/xceasy-runner`;
+- `tar.gz` archive;
+- SHA-256 checksum;
+- готовую Homebrew formula `xceasyctl.rb` с checksum именно этого archive;
+- curated notes из `CHANGELOG.md` и автоматически сгенерированные GitHub notes.
+
+Binary получает ad-hoc signature. Developer ID signing и notarization пока не настроены, поэтому это не заявляется как notarized distribution.
+
+## Release gate
+
+Перед публикацией workflow:
+
+1. проверяет, что tag `vX.Y.Z`, `release-metadata.json`, schema и `CHANGELOG.md` согласованы;
+2. запускает полный contract suite;
+3. собирает universal binary и проверяет обе архитектуры;
+4. checkout-ит `qa-point/xceasy` и `qa-point/xceasy-examples`;
+5. устанавливает Tuist из `mise.toml`;
+6. запускает реальный shard acceptance на двух iPhone Simulators;
+7. проверяет archive, checksum, signature и packaged binary;
+8. генерирует Homebrew formula из фактического release archive;
+9. создаёт release через официальный `gh` CLI.
+
+## Каналы распространения
+
+GitHub Release — источник истины для binary archive и checksum.
+
+Homebrew использует отдельный tap `qa-point/homebrew-tap`. После первого release скопируйте
+сгенерированный asset `xceasyctl.rb` в `Formula/xceasyctl.rb` tap-репозитория и проверьте
+`brew install qa-point/tap/xceasyctl`. Автоматический update tap следует включать отдельным job
+только после создания репозитория и scoped secret с write-доступом исключительно к tap.
+
+Nix distribution находится в корневом `flake.nix`: он собирает CLI из immutable release tag и
+поддерживает только `aarch64-darwin`/`x86_64-darwin`. `nixpkgs` закреплён commit hash и
+`flake.lock`; их обновление выполняется отдельным проверяемым change, а не во время release.
+
+## Выпуск версии
+
+Обновите `release-metadata.json` и добавьте одноимённый раздел в `CHANGELOG.md`, затем выполните локальную проверку:
+
+```bash
+./scripts/check.sh
+./scripts/verify-release.sh v0.1.0
+make package
+```
+
+После merge в `main` создайте и отправьте существующий tag:
+
+```bash
+git tag -a v0.1.0 -m "XCEasy Runner 0.1.0"
+git push origin v0.1.0
+```
+
+Workflow не создаёт tag автоматически и использует `--verify-tag`. Ручной `workflow_dispatch` принимает только уже существующий tag.
+
+Для repository settings нужны Actions permission `Read and write permissions`; workflow сам ограничен `contents: write`.
+
+Поскольку `qa-point/xceasy` и `qa-point/xceasy-examples` приватные, добавьте Actions secret
+`XC_EASY_INTEGRATION_TOKEN` с fine-grained personal access token: repository access только к этим
+двум репозиториям и read-only permission `Contents`. Checkout не сохраняет credentials в Git.
+Стандартный `GITHUB_TOKEN` runner-репозитория не имеет доступа к соседним приватным репозиториям.
+Если вместо PAT используется GitHub App, workflow должен генерировать короткоживущий installation
+token во время job из App credentials; сохранять installation token как постоянный secret нельзя.

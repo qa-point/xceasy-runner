@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qa-point.dev/xceasy/schemas/xceasy-test-metadata-manifest.schema.json",
+  "title": "XCEasy test metadata manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "records"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["identifier", "canonical_scenario", "case_id", "markers"],
+        "properties": {
+          "identifier": { "type": "string", "minLength": 1 },
+          "canonical_scenario": { "type": "string", "minLength": 1 },
+          "case_id": { "type": ["string", "null"] },
+          "markers": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+        }
+      }
+    }
+  }
+}

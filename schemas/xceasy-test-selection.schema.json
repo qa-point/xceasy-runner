@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qa-point.dev/xceasy/schemas/xceasy-test-selection.schema.json",
+  "title": "XCEasy marker selection",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "include_any": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "include_all": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "exclude": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+  }
+}

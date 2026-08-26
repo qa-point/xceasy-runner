@@ -1,0 +1,9 @@
+{
+  "assignments": [
+    {"device_id": "device-1", "tests": ["T/S/test1()", "T/S/test2()", "T/S/test3()"]},
+    {"device_id": "device-2", "tests": ["T/S/test4()", "T/S/test5()"]}
+  ],
+  "retry_assignments": [
+    {"attempt": 2, "device_id": "device-1", "tests": ["T/S/test6()"]}
+  ]
+}

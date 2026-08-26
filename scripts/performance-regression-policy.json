@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1.0.0",
+  "minimumExecutionSamples": 3,
+  "maximumRelativeP95Increase": 0.25,
+  "maximumAbsoluteP95IncreaseMilliseconds": 250,
+  "requireEnvironmentMatch": true,
+  "failOnRegression": true
+}

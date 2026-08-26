@@ -1,0 +1,64 @@
+#!/bin/sh
+set -eu
+
+if [ "$#" -eq 1 ] && [ "$1" = "swift-demangle" ]; then
+    cat
+    exit 0
+fi
+
+if [ "$#" -eq 4 ] && [ "$1" = "simctl" ] && [ "$2" = "list" ] && [ "$3" = "devices" ] && [ "$4" = "--json" ]; then
+    jq -n '{
+        devices: {
+            "com.apple.CoreSimulator.SimRuntime.iOS-18-0": [
+                {udid: "device-1", name: "Recovery 1", state: "Shutdown", isAvailable: true},
+                {udid: "device-2", name: "Recovery 2", state: "Shutdown", isAvailable: true},
+                {udid: "device-3", name: "Recovery 3", state: "Shutdown", isAvailable: true}
+            ]
+        }
+    }'
+    exit 0
+fi
+
+if [ "$#" -eq 3 ] && [ "$1" = "simctl" ] && [ "$2" = "boot" ]; then
+    exit 0
+fi
+
+if [ "$#" -eq 5 ] && [ "$1" = "simctl" ] && [ "$2" = "get_app_container" ] && [ "$5" = "data" ]; then
+    if [ -z "${XC_EASY_FAKE_STATE:-}" ]; then
+        echo "XC_EASY_FAKE_STATE is required" >&2
+        exit 64
+    fi
+    printf '%s\n' "$XC_EASY_FAKE_STATE/containers/$3"
+    exit 0
+fi
+
+if [ "$#" -ge 5 ] && [ "$1" = "devicectl" ] && [ "$2" = "list" ] && [ "$3" = "devices" ]; then
+    while [ "$#" -gt 0 ]; do
+        if [ "$1" = "--json-output" ]; then
+            jq -n '{result:{devices:[{identifier:"physical-device-1",deviceProperties:{name:"Recovery iPhone",osVersionNumber:"26.5"},hardwareProperties:{marketingName:"iPhone 17 Pro"}}]}}' > "$2"
+            exit 0
+        fi
+        shift
+    done
+fi
+
+if [ "$#" -ge 4 ] && [ "$1" = "devicectl" ] && [ "$2" = "device" ] && [ "$3" = "copy" ] && [ "$4" = "from" ]; then
+    device=
+    destination=
+    response=
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --device) device=$2; shift 2 ;;
+            --destination) destination=$2; shift 2 ;;
+            --json-output) response=$2; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+    mkdir -p "$destination"
+    cp -R "$XC_EASY_FAKE_STATE/containers/$device/Library/Caches/allure-results/." "$destination/"
+    jq -n '{result:{copied:true}}' > "$response"
+    exit 0
+fi
+
+echo "Unexpected fake xcrun invocation: $*" >&2
+exit 64

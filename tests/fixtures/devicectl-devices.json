@@ -1,0 +1,17 @@
+{
+  "info": {"arguments": ["devicectl", "list", "devices"]},
+  "result": {
+    "devices": [
+      {
+        "identifier": "physical-device-1",
+        "deviceProperties": {"name": "QA iPhone", "osVersionNumber": "26.5"},
+        "hardwareProperties": {"marketingName": "iPhone 17 Pro", "udid": "physical-device-1"}
+      },
+      {
+        "identifier": "physical-device-2",
+        "deviceProperties": {"name": "Shared iPhone", "osVersionNumber": "26.5"},
+        "hardwareProperties": {"marketingName": "iPhone 17", "udid": "physical-device-2"}
+      }
+    ]
+  }
+}

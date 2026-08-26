@@ -1,0 +1,49 @@
+#!/bin/sh
+set -eu
+
+output=
+derived_data=
+test_plan=
+test_configuration=
+while [ "$#" -gt 0 ]; do
+    if [ "$1" = "-test-enumeration-output-path" ]; then
+        output=$2
+        shift 2
+    elif [ "$1" = "-derivedDataPath" ]; then
+        derived_data=$2
+        shift 2
+    elif [ "$1" = "-testPlan" ]; then
+        test_plan=$2
+        shift 2
+    elif [ "$1" = "-only-test-configuration" ]; then
+        test_configuration=$2
+        shift 2
+    else
+        shift
+    fi
+done
+
+if [ -n "${XC_EASY_EXPECT_TEST_PLAN:-}" ]; then
+    [ "$test_plan" = "$XC_EASY_EXPECT_TEST_PLAN" ] || { echo "Expected test plan was not forwarded" >&2; exit 64; }
+    [ "$test_configuration" = "${XC_EASY_EXPECT_TEST_CONFIGURATION:-}" ] || { echo "Expected test configuration was not forwarded" >&2; exit 64; }
+fi
+
+if [ -z "$output" ]; then
+    [ -n "$derived_data" ] || { echo "Fake xcodebuild requires derived data" >&2; exit 64; }
+    mkdir -p "$derived_data/Build/Products/Debug-iphonesimulator/StressUITests.xctest"
+    printf '%s\n' \
+        '{"schemaVersion":"1.0.0","kind":"Marker","scope":"class","declaration":"StressSuite","targetType":"StressSuite","concreteMethod":null,"canonicalScenario":null,"values":["smoke"],"options":{},"parameters":[]}' \
+        '{"schemaVersion":"1.0.0","kind":"Marker","scope":"method","declaration":"test0","targetType":"StressSuite","concreteMethod":null,"canonicalScenario":null,"values":["Debug"],"options":{},"parameters":[]}' \
+        > "$derived_data/Build/Products/Debug-iphonesimulator/StressUITests.xctest/StressUITests"
+    printf 'fake xctestrun\n' > "$derived_data/Build/Products/Stress.xctestrun"
+    exit 0
+fi
+
+mkdir -p "$(dirname "$output")"
+jq -n '{
+    values: [{
+        enabledTests: [range(0; 100) | {
+            identifier: ("StressUITests/StressSuite/test" + tostring + "()")
+        }]
+    }]
+}' > "$output"

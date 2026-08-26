@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qa-point.dev/xceasy-runner/schemas/execution-config-1.0.0.schema.json",
+  "title": "XCEasy Runner execution configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "mode", "workspace", "scheme", "test_target", "runner_bundle_id", "output_directory", "devices"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "mode": {"enum": ["shard", "replicate"]},
+    "retry_missing_tests": {"type": "boolean", "default": true},
+    "max_recovery_attempts": {"type": "integer", "minimum": 0, "maximum": 5, "default": 2},
+    "require_all_devices": {"type": "boolean", "default": false},
+    "workspace": {"type": "string", "minLength": 1},
+    "scheme": {"type": "string", "minLength": 1},
+    "test_target": {"type": "string", "minLength": 1},
+    "runner_bundle_id": {"type": "string", "minLength": 1},
+    "output_directory": {"type": "string", "minLength": 1},
+    "test_plan": {"type": "string", "minLength": 1},
+    "test_configuration": {"type": "string", "minLength": 1},
+    "devices": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type"],
+        "properties": {
+          "type": {"enum": ["simulator", "physical"]},
+          "id": {"type": "string", "minLength": 1},
+          "name": {"type": "string", "minLength": 1}
+        },
+        "oneOf": [
+          {"required": ["id"], "not": {"required": ["name"]}},
+          {"required": ["name"], "not": {"required": ["id"]}}
+        ]
+      }
+    },
+    "selection": {"$ref": "xceasy-test-selection.schema.json"},
+    "performance_environment_key": {"type": "string", "minLength": 1, "default": "unspecified"},
+    "performance_baseline": {"type": "string", "default": ""},
+    "performance_policy": {"type": "string", "default": ""},
+    "physical_device": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allow_provisioning_updates": {"type": "boolean", "default": false},
+        "allow_device_registration": {"type": "boolean", "default": false},
+        "development_team": {"type": "string", "default": ""}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"allow_device_registration": {"const": true}},
+            "required": ["allow_device_registration"]
+          },
+          "then": {
+            "properties": {"allow_provisioning_updates": {"const": true}},
+            "required": ["allow_provisioning_updates"]
+          }
+        }
+      ]
+    },
+    "state_isolation": {"enum": ["none", "app_reset_hook"], "default": "none"}
+  },
+  "dependentRequired": {
+    "test_plan": ["test_configuration"],
+    "test_configuration": ["test_plan"]
+  }
+}

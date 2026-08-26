@@ -1,0 +1,185 @@
+#!/bin/sh
+set -eu
+
+if [ -z "${XC_EASY_FAKE_STATE:-}" ]; then
+    echo "XC_EASY_FAKE_STATE is required" >&2
+    exit 64
+fi
+
+if [ -n "${XC_EASY_XCODEBUILD_LOG:-}" ]; then
+    printf '%s\n' "$*" >> "$XC_EASY_XCODEBUILD_LOG"
+fi
+
+case "$XC_EASY_FAKE_STATE" in
+    /tmp/*|/private/tmp/*|/var/folders/*|/private/var/folders/*) ;;
+    *) echo "XC_EASY_FAKE_STATE must be an isolated temporary directory" >&2; exit 64 ;;
+esac
+
+enumeration_output=
+derived_data=
+xctestrun=
+result_bundle=
+mode=
+test_plan=
+test_configuration=
+selected_tests=$(mktemp)
+trap 'rm -f "$selected_tests"' EXIT
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -test-enumeration-output-path)
+            enumeration_output=$2
+            shift 2
+            ;;
+        -derivedDataPath)
+            derived_data=$2
+            shift 2
+            ;;
+        -xctestrun)
+            xctestrun=$2
+            shift 2
+            ;;
+        -resultBundlePath)
+            result_bundle=$2
+            shift 2
+            ;;
+        -testPlan)
+            test_plan=$2
+            shift 2
+            ;;
+        -only-test-configuration)
+            test_configuration=$2
+            shift 2
+            ;;
+        -only-testing:*)
+            printf '%s\n' "${1#-only-testing:}" >> "$selected_tests"
+            shift
+            ;;
+        build-for-testing)
+            mode=build
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+if [ -n "${XC_EASY_EXPECT_TEST_CONFIGURATION:-}" ]; then
+    [ "$test_configuration" = "$XC_EASY_EXPECT_TEST_CONFIGURATION" ] || { echo "Expected test configuration was not forwarded" >&2; exit 64; }
+    if [ "$mode" = "build" ]; then
+        [ "$test_plan" = "${XC_EASY_EXPECT_TEST_PLAN:-}" ] || { echo "Expected test plan was not forwarded to build" >&2; exit 64; }
+    fi
+fi
+
+if [ -n "$enumeration_output" ]; then
+    mkdir -p "$(dirname "$enumeration_output")"
+    jq -n '{
+        values: [{
+            enabledTests: [range(0; 12) | {
+                identifier: ("StressUITests/StressSuite/test" + tostring + "()")
+            }]
+        }]
+    }' > "$enumeration_output"
+    exit 0
+fi
+
+if [ "$mode" = "build" ]; then
+    mkdir -p "$derived_data/Build/Products"
+    mkdir -p "$derived_data/Build/Products/Debug-iphonesimulator/StressUITests.xctest"
+    printf 'fake test binary\n' > "$derived_data/Build/Products/Debug-iphonesimulator/StressUITests.xctest/StressUITests"
+    jq -n '{
+        StressUITests: {
+            EnvironmentVariables: {
+                XC_EASY_RUN_ID: "",
+                XC_EASY_DEVICE_ID: "",
+                XC_EASY_DEVICE_TYPE: "simulator",
+                XC_EASY_STATE_ISOLATION: "none",
+                XC_EASY_SHARD_INDEX: "0",
+                XC_EASY_ATTEMPT: "1"
+            }
+        }
+    }' > "$derived_data/Build/Products/Stress.xctestrun"
+    plutil -convert xml1 "$derived_data/Build/Products/Stress.xctestrun"
+    exit 0
+fi
+
+if [ -z "$xctestrun" ] || [ -z "$result_bundle" ]; then
+    echo "Unexpected fake xcodebuild invocation" >&2
+    exit 64
+fi
+
+device=$(plutil -extract StressUITests.EnvironmentVariables.XC_EASY_DEVICE_ID raw "$xctestrun")
+shard=$(plutil -extract StressUITests.EnvironmentVariables.XC_EASY_SHARD_INDEX raw "$xctestrun")
+attempt=$(plutil -extract StressUITests.EnvironmentVariables.XC_EASY_ATTEMPT raw "$xctestrun")
+results="$XC_EASY_FAKE_STATE/containers/$device/Library/Caches/allure-results"
+rm -rf "$results"
+mkdir -p "$results" "$result_bundle"
+printf 'fake xcresult for device=%s attempt=%s\n' "$device" "$attempt" > "$result_bundle/record.txt"
+jq -n '{name: "XCEasy recovery contract", type: "local"}' > "$results/executor.json"
+jq -n '[]' > "$results/categories.json"
+printf 'suite=recovery-contract\n' > "$results/environment.properties"
+
+if { [ "$attempt" = "1" ] && [ "$device" = "device-3" ]; } || \
+   { [ "$attempt" = "2" ] && [ "$device" = "device-1" ]; }; then
+    exit 70
+fi
+
+while IFS= read -r identifier; do
+    [ -n "$identifier" ] || continue
+    full_name=${identifier#StressUITests/}
+    name=${full_name##*/}
+    uuid=$(printf '%s' "$device-$attempt-$identifier" | shasum -a 256 | awk '{print $1}')
+    test_case_id=$(printf '%s' "$full_name" | shasum -a 256 | awk '{print $1}')
+    history_id=$(printf '%s|' "$test_case_id" | shasum -a 256 | awk '{print $1}')
+    jq -n \
+        --arg uuid "$uuid" \
+        --arg test_case_id "$test_case_id" \
+        --arg history_id "$history_id" \
+        --arg full_name "$full_name" \
+        --arg name "$name" \
+        --arg device "$device" \
+        --arg shard "$shard" \
+        --arg attempt "$attempt" \
+        '{
+            uuid: $uuid,
+            testCaseId: $test_case_id,
+            historyId: $history_id,
+            fullName: $full_name,
+            name: $name,
+            status: "passed",
+            stage: "finished",
+            start: 1,
+            stop: 2,
+            labels: [
+                {name: "xceasy.device_id", value: $device},
+                {name: "xceasy.shard_index", value: $shard},
+                {name: "xceasy.attempt", value: $attempt}
+            ]
+        }' > "$results/$uuid-result.json"
+    jq -n --arg uuid "$uuid" '{uuid: ("container-" + $uuid), children: [$uuid]}' \
+        > "$results/$uuid-container.json"
+done < "$selected_tests"
+
+if [ "${XC_EASY_FAKE_PERFORMANCE:-false}" = "true" ]; then
+    jq -n \
+        --arg device "$device" \
+        --arg attempt "$attempt" \
+        '{
+            schemaVersion:"1.0.0",
+            testId:"StressSuite/performance",
+            executionId:($device + "-" + $attempt),
+            metrics:[{
+                operationKey:"ui.tap",
+                count:5,
+                minimumMilliseconds:50,
+                maximumMilliseconds:100,
+                meanMilliseconds:75,
+                medianMilliseconds:75,
+                p90Milliseconds:95,
+                p95Milliseconds:100,
+                p99Milliseconds:100
+            }],
+            findings:[]
+        }' > "$results/${device}_${attempt}_performance-summary.json"
+fi

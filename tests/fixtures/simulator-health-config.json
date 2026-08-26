@@ -1,0 +1,7 @@
+{
+  "devices": [
+    "available-device",
+    "unavailable-device",
+    "missing-device"
+  ]
+}

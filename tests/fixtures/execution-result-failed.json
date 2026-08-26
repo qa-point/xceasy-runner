@@ -1,0 +1,13 @@
+{
+  "uuid": "result-failed",
+  "fullName": "BannerTests/testFailed()",
+  "name": "testFailed()",
+  "status": "failed",
+  "stage": "finished",
+  "start": 1,
+  "stop": 2,
+  "labels": [
+    {"name": "xceasy.device_id", "value": "device-1"},
+    {"name": "xceasy.shard_index", "value": "0"}
+  ]
+}

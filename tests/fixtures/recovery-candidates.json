@@ -1,0 +1,4 @@
+[
+  {"device_id": "device-1", "device_type": "simulator", "destination": "platform=iOS Simulator,id=device-1", "shard_index": 0},
+  {"device_id": "device-2", "device_type": "simulator", "destination": "platform=iOS Simulator,id=device-2", "shard_index": 1}
+]

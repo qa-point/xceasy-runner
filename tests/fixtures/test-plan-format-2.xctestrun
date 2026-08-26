@@ -1,0 +1,15 @@
+{
+  "__xctestrun_metadata__": {"FormatVersion": 2},
+  "TestConfigurations": [
+    {
+      "IsEnabled": true,
+      "Name": "English",
+      "TestTargets": [
+        {
+          "BlueprintName": "SampleUITests",
+          "EnvironmentVariables": {"EXISTING": "value"}
+        }
+      ]
+    }
+  ]
+}

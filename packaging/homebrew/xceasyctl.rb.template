@@ -1,0 +1,24 @@
+# typed: strict
+# frozen_string_literal: true
+
+# Homebrew package for the XCEasy Runner CLI.
+class Xceasyctl < Formula
+  desc "Runner for XCEasy-based UI tests on Apple devices"
+  homepage "https://github.com/qa-point/xceasy-runner"
+  url "https://github.com/qa-point/xceasy-runner/releases/download/v@VERSION@/xceasy-runner-@VERSION@-macos-universal.tar.gz"
+  sha256 "@SHA256@"
+  license "Apache-2.0"
+
+  depends_on "jq"
+  depends_on :macos
+  depends_on xcode: "15.0"
+
+  def install
+    bin.install "bin/xceasyctl"
+    (libexec/"xceasy-runner").install Dir["libexec/xceasy-runner/*"]
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/xceasyctl version")
+  end
+end

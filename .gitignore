@@ -1,0 +1,12 @@
+.DS_Store
+DerivedData/
+*.xcresult
+allure-results/
+allure-report/
+artifacts/
+runner-artifacts/
+.mise.local.toml
+.build/
+dist/
+result
+result-*

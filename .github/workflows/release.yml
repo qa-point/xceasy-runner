@@ -1,0 +1,139 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to publish
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Verify, package, and publish
+    runs-on: macos-14
+    timeout-minutes: 40
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+          xcodebuild -version
+          swift --version
+
+      - name: Verify tag and release metadata
+        run: ./scripts/verify-release.sh "$RELEASE_TAG"
+
+      - name: Run contract suite
+        run: ./scripts/check.sh
+
+      - name: Build universal release CLI
+        run: ./scripts/build-cli.sh release
+
+      - name: Check out XCEasy framework acceptance fixture
+        uses: actions/checkout@v4
+        with:
+          repository: qa-point/xceasy
+          path: integration/xceasy
+          token: ${{ secrets.XC_EASY_INTEGRATION_TOKEN }}
+          persist-credentials: false
+
+      - name: Check out XCEasy examples acceptance fixture
+        uses: actions/checkout@v4
+        with:
+          repository: qa-point/xceasy-examples
+          path: integration/xceasy-examples
+          token: ${{ secrets.XC_EASY_INTEGRATION_TOKEN }}
+          persist-credentials: false
+
+      - name: Install pinned Tuist
+        run: |
+          brew list mise >/dev/null 2>&1 || brew install mise
+          cd integration/xceasy-examples
+          mise trust
+          mise install
+
+      - name: Generate acceptance workspace
+        run: |
+          cd integration/xceasy-examples
+          TUIST_XCEASY_USE_LOCAL_PACKAGE=1 mise exec -- tuist generate --no-open
+
+      - name: Run real two-simulator acceptance
+        run: |
+          device_1=$(xcrun simctl list devices available --json | jq -r '[.devices[][] | select(.name | startswith("iPhone")) | .udid][0] // ""')
+          device_2=$(xcrun simctl list devices available --json | jq -r '[.devices[][] | select(.name | startswith("iPhone")) | .udid][1] // ""')
+          if [ -z "$device_1" ] || [ -z "$device_2" ]; then
+            echo "Two available iPhone simulators are required for release acceptance" >&2
+            exit 69
+          fi
+          binary=$(swift build --configuration release --show-bin-path --arch arm64 --arch x86_64)/xceasyctl
+          "$binary" test \
+            --config integration/xceasy-examples/xceasy-runner.json \
+            --simulator "$device_1" \
+            --simulator "$device_2"
+
+      - name: Upload acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-acceptance-${{ env.RELEASE_TAG }}
+          path: integration/xceasy-examples/runner-artifacts/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Build release package
+        run: |
+          ./scripts/package-cli.sh
+          ./scripts/build-release-notes.sh dist/release-notes.md
+          archive=$(find dist -maxdepth 1 -name '*.tar.gz' -print -quit)
+          ./scripts/render-homebrew-formula.sh "$archive" dist/xceasyctl.rb
+
+      - name: Verify packaged binary and checksum
+        run: |
+          archive=$(find dist -maxdepth 1 -name '*.tar.gz' -print -quit)
+          (cd dist && shasum -a 256 -c "$(basename "$archive.sha256")")
+          stage=$(mktemp -d)
+          tar -xzf "$archive" -C "$stage"
+          binary=$(find "$stage" -path '*/bin/xceasyctl' -type f -print -quit)
+          lipo "$binary" -verify_arch arm64 x86_64
+          "$binary" version
+          codesign --verify --strict --verbose=2 "$binary"
+
+      - name: Publish GitHub Release
+        run: |
+          version=$(jq -r '.version' release-metadata.json)
+          gh release create "$RELEASE_TAG" \
+            dist/*.tar.gz \
+            dist/*.tar.gz.sha256 \
+            dist/xceasyctl.rb \
+            --repo "$GH_REPO" \
+            --verify-tag \
+            --fail-on-no-commits \
+            --latest \
+            --title "XCEasy Runner $version" \
+            --notes-file dist/release-notes.md \
+            --generate-notes
+
+      - name: Verify published release
+        run: |
+          gh release view "$RELEASE_TAG" \
+            --repo "$GH_REPO" \
+            --json url,tagName,isDraft,isPrerelease,assets

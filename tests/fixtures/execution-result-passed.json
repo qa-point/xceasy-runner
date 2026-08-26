@@ -1,0 +1,13 @@
+{
+  "uuid": "result-passed",
+  "fullName": "BannerTests/testPassed()",
+  "name": "testPassed()",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1,
+  "stop": 2,
+  "labels": [
+    {"name": "xceasy.device_id", "value": "device-1"},
+    {"name": "xceasy.shard_index", "value": "0"}
+  ]
+}

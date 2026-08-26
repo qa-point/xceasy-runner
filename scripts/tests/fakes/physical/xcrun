@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eu
+
+if [ "$1" = "devicectl" ] && [ "$2" = "device" ] && [ "$3" = "copy" ] && [ "$4" = "from" ]; then
+    destination=
+    response=
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --destination) destination=$2; shift 2 ;;
+            --json-output) response=$2; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+    [ -n "${XC_EASY_FAKE_PHYSICAL_RESULTS:-}" ] || exit 64
+    mkdir -p "$destination"
+    cp -R "$XC_EASY_FAKE_PHYSICAL_RESULTS/." "$destination/"
+    jq -n '{result:{copied:true}}' > "$response"
+    exit 0
+fi
+
+echo "Unexpected physical fake xcrun invocation" >&2
+exit 64
