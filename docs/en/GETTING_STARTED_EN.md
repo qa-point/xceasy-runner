@@ -1,6 +1,6 @@
 # Installation and first run
 
-English · [Русский](../ru/GETTING_STARTED_RU.md) · [README](../../README_EN.md)
+English · [Русский](../ru/GETTING_STARTED_RU.md) · [README](../../README.md)
 
 ## Installed layout
 

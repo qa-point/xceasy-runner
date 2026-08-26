@@ -1,6 +1,6 @@
 # GitHub Releases
 
-English · [Русский](../ru/RELEASING_RU.md) · [README](../../README_EN.md)
+English · [Русский](../ru/RELEASING_RU.md) · [README](../../README.md)
 
 ## Published assets
 

@@ -11,6 +11,7 @@ require_file() {
     }
 }
 
+require_file README.md
 require_file README_EN.md
 require_file README_RU.md
 
@@ -39,7 +40,7 @@ done
 link_list=$(mktemp "${TMPDIR:-/tmp}/xceasy-runner-doc-links.XXXXXX")
 trap 'rm -f "$link_list"' EXIT HUP INT TERM
 
-find README_EN.md README_RU.md docs -type f -name '*.md' -exec perl -ne \
+find README.md README_EN.md README_RU.md docs -type f -name '*.md' -exec perl -ne \
     'while (/\[[^\]]*\]\(([^)]+)\)/g) { print "$ARGV\t$1\n" }' {} + >"$link_list"
 
 while IFS="$(printf '\t')" read -r source_file raw_target; do

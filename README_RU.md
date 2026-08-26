@@ -2,7 +2,7 @@
 
 XCEasy Runner — CLI-раннер для UI-тестов, написанных на основе [XCEasy](https://github.com/qa-point/xceasy). Он запускает XCUITest-наборы на iOS Simulator, физических iPhone/iPad и смешанной matrix, отбирает тесты по XCEasy metadata, распределяет их между устройствами и собирает единый проверенный каталог `allure-results`.
 
-English: [README_EN.md](README_EN.md)
+English: [README.md](README.md)
 
 ## Зачем он нужен
 
