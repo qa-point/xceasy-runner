@@ -28,4 +28,4 @@ Worker classification is evidence-based. Completed `failed`/`broken` Allure resu
 
 ## Known boundary
 
-0.1.0 supports iOS Simulators. Physical-device container export needs a separate transport contract. Permanent performance history and TestOps upload remain external CI responsibilities.
+0.1.0 supports iOS Simulators, physical iPhone/iPad devices, and mixed device matrices. Permanent performance history and TestOps upload remain external CI responsibilities.

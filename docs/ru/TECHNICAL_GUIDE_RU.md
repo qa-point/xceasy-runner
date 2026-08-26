@@ -28,4 +28,4 @@ Runner 0.1.0 принимает config schema 1.0.0 и XCEasy metadata manifest 
 
 ## Текущая граница
 
-Версия 0.1.0 поддерживает iOS Simulators. Physical-device export требует отдельного transport contract. Постоянная performance history и загрузка в TestOps остаются ответственностью CI пользователя.
+Версия 0.1.0 поддерживает iOS Simulators, физические iPhone/iPad и смешанные device matrix. Постоянная performance history и загрузка в TestOps остаются ответственностью CI пользователя.
