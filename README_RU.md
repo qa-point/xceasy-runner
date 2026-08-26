@@ -94,8 +94,8 @@ xceasyctl test
 Маркер остаётся обычной метой, пока runner явно не использует его для отбора:
 
 ```bash
-xceasyctl test --annotation CDM
-xceasyctl test --annotation CDM --annotation LS
+xceasyctl test --annotation Team1
+xceasyctl test --annotation Team1 --annotation Team2
 xceasyctl test --require-annotation Smoke --require-annotation IOS
 xceasyctl test --exclude-annotation Debug
 ```

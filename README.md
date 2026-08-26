@@ -84,8 +84,8 @@ Each launch creates an isolated `run-*` directory. Use `allure-results/` for All
 ## Marker selection
 
 ```bash
-xceasyctl test --annotation CDM
-xceasyctl test --annotation CDM --annotation LS
+xceasyctl test --annotation Team1
+xceasyctl test --annotation Team1 --annotation Team2
 xceasyctl test --require-annotation Smoke --require-annotation IOS
 xceasyctl test --exclude-annotation Debug
 ```
