@@ -20,7 +20,7 @@ concurrency:
 jobs:
   release:
     name: Verify, package, and publish
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 40
     env:
       RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
