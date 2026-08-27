@@ -63,9 +63,5 @@ The workflow never creates a tag and uses `--verify-tag`. Manual `workflow_dispa
 
 Repository settings must allow Actions `Read and write permissions`; the workflow itself is restricted to `contents: write`.
 
-Because `qa-point/xceasy` and `qa-point/xceasy-examples` are private, add the
-`XC_EASY_INTEGRATION_TOKEN` Actions secret containing a fine-grained personal access token. Limit
-repository access to those two repositories and grant read-only `Contents`. Checkout does not
-persist these credentials in Git. The runner repository's standard `GITHUB_TOKEN` cannot read
-sibling private repositories. To use a GitHub App instead, generate its short-lived installation
-token during the job from App credentials; do not store an installation token as a persistent secret.
+The release workflow does not access sibling repositories and does not require an
+`XC_EASY_INTEGRATION_TOKEN` secret.

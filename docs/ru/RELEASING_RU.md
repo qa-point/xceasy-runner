@@ -63,9 +63,5 @@ Workflow не создаёт tag автоматически и использу�
 
 Для repository settings нужны Actions permission `Read and write permissions`; workflow сам ограничен `contents: write`.
 
-Поскольку `qa-point/xceasy` и `qa-point/xceasy-examples` приватные, добавьте Actions secret
-`XC_EASY_INTEGRATION_TOKEN` с fine-grained personal access token: repository access только к этим
-двум репозиториям и read-only permission `Contents`. Checkout не сохраняет credentials в Git.
-Стандартный `GITHUB_TOKEN` runner-репозитория не имеет доступа к соседним приватным репозиториям.
-Если вместо PAT используется GitHub App, workflow должен генерировать короткоживущий installation
-token во время job из App credentials; сохранять installation token как постоянный secret нельзя.
+Release workflow не обращается к соседним репозиториям и не требует secret
+`XC_EASY_INTEGRATION_TOKEN`.

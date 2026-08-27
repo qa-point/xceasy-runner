@@ -53,6 +53,29 @@ The CLI honors an explicit `DEVELOPER_DIR`, then checks `xcode-select`, `/Applic
 See [Installation and first run](docs/en/GETTING_STARTED_EN.md) for the complete GitHub Release,
 Homebrew, Nix, and initial configuration walkthrough.
 
+After the first public release, install with Homebrew:
+
+```bash
+brew install qa-point/tap/xceasyctl
+xceasyctl version
+```
+
+Or install the immutable release tag with Nix:
+
+```bash
+nix profile install github:qa-point/xceasy-runner/v0.1.0
+xceasyctl version
+```
+
+Run through Nix without installing:
+
+```bash
+nix run github:qa-point/xceasy-runner/v0.1.0 -- version
+```
+
+These remote channels become available after the repository, GitHub Release, and Homebrew tap are
+published. Until then, use the source installation below.
+
 ### Build and install the CLI
 
 The public `xceasyctl` command is a compiled Swift executable. Shell orchestration is installed privately under `libexec` and is not the user entrypoint:

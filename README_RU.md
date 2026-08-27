@@ -53,6 +53,29 @@ CLI уважает заданный `DEVELOPER_DIR`, затем проверяе
 Полная пошаговая инструкция по GitHub Release, Homebrew, Nix и первому config находится в
 [«Установка и первый запуск»](docs/ru/GETTING_STARTED_RU.md).
 
+После первого публичного release установка через Homebrew:
+
+```bash
+brew install qa-point/tap/xceasyctl
+xceasyctl version
+```
+
+Установка immutable release tag через Nix:
+
+```bash
+nix profile install github:qa-point/xceasy-runner/v0.1.0
+xceasyctl version
+```
+
+Запуск через Nix без установки:
+
+```bash
+nix run github:qa-point/xceasy-runner/v0.1.0 -- version
+```
+
+Удалённые каналы заработают после публикации репозитория, GitHub Release и Homebrew tap. До этого
+используйте сборку из исходников ниже.
+
 ### Сборка и установка CLI
 
 Публичный `xceasyctl` собирается как Swift executable. Shell orchestration устанавливается приватно в `libexec` и не является пользовательским entrypoint:
