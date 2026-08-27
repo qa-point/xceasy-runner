@@ -22,12 +22,12 @@ Before publishing, the workflow:
 1. verifies agreement between `vX.Y.Z`, `release-metadata.json`, schema, and `CHANGELOG.md`;
 2. runs the complete contract suite;
 3. builds a universal binary and verifies both architectures;
-4. checks out `qa-point/xceasy` and `qa-point/xceasy-examples`;
-5. installs the Tuist version pinned by `mise.toml`;
-6. performs a real sharded acceptance run on two iPhone Simulators;
-7. verifies the archive, checksum, signature, and packaged binary;
-8. renders a Homebrew formula from the actual release archive;
-9. creates the release through the official `gh` CLI.
+4. installs the SwiftLint version pinned by `mise.toml`;
+5. verifies the archive, checksum, signature, and packaged binary;
+6. renders a Homebrew formula from the actual release archive;
+7. creates the release through the official `gh` CLI.
+
+The hosted release workflow does not run UI tests. Perform the documented real two-simulator acceptance locally before creating the release tag when execution behavior changes.
 
 ## Distribution channels
 

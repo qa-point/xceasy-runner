@@ -1,0 +1,15 @@
+only_rules:
+  - colon
+  - comma
+  - duplicate_imports
+  - empty_string
+  - leading_whitespace
+  - trailing_newline
+  - trailing_semicolon
+  - trailing_whitespace
+  - vertical_whitespace
+
+excluded:
+  - .build
+
+reporter: xcode

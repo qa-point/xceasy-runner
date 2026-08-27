@@ -18,7 +18,10 @@ grep -q "^# XCEasy Runner $version$" "$notes"
 grep -q "xceasyctl version" "$notes"
 
 grep -q 'gh release create' "$repository_root/.github/workflows/release.yml"
-grep -q 'Run real two-simulator acceptance' "$repository_root/.github/workflows/release.yml"
+if grep -q 'Run real two-simulator acceptance' "$repository_root/.github/workflows/release.yml"; then
+    echo "Release workflow must not run hosted UI acceptance" >&2
+    exit 1
+fi
 grep -q 'Verify published release' "$repository_root/.github/workflows/release.yml"
 
 archive="$temporary_directory/xceasy-runner-$version-macos-universal.tar.gz"

@@ -27,6 +27,9 @@ jobs:
           xcodebuild -version
           swift --version
 
+      - name: Install mise tools
+        uses: jdx/mise-action@v3
+
       - name: Run contract suite
         run: ./scripts/check.sh
 

@@ -22,12 +22,12 @@ Binary получает ad-hoc signature. Developer ID signing и notarization �
 1. проверяет, что tag `vX.Y.Z`, `release-metadata.json`, schema и `CHANGELOG.md` согласованы;
 2. запускает полный contract suite;
 3. собирает universal binary и проверяет обе архитектуры;
-4. checkout-ит `qa-point/xceasy` и `qa-point/xceasy-examples`;
-5. устанавливает Tuist из `mise.toml`;
-6. запускает реальный shard acceptance на двух iPhone Simulators;
-7. проверяет archive, checksum, signature и packaged binary;
-8. генерирует Homebrew formula из фактического release archive;
-9. создаёт release через официальный `gh` CLI.
+4. устанавливает SwiftLint из `mise.toml`;
+5. проверяет archive, checksum, signature и packaged binary;
+6. генерирует Homebrew formula из фактического release archive;
+7. создаёт release через официальный `gh` CLI.
+
+Hosted release workflow не запускает UI-тесты. Если менялась execution logic, документированный реальный acceptance на двух simulators выполняется локально до создания release tag.
 
 ## Каналы распространения
 

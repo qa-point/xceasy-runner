@@ -18,6 +18,8 @@ while IFS= read -r script; do
     esac
 done
 
+"$repository_root/scripts/lint-swift.sh"
+
 jq empty "$repository_root/release-metadata.json" "$repository_root"/schemas/*.json "$repository_root"/scripts/*.json
 "$repository_root/scripts/validate-docs.sh"
 "$repository_root/bin/xceasy" version >/dev/null
