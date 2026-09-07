@@ -42,6 +42,9 @@ jobs:
       - name: Install mise tools
         uses: jdx/mise-action@v3
 
+      - name: Install contract check dependencies
+        run: brew install ripgrep
+
       - name: Verify tag and release metadata
         run: ./scripts/verify-release.sh "$RELEASE_TAG"
 
