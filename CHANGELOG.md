@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1 — 2026-09-07
+
+- Install ripgrep for hosted CI and release verification.
+- Document Homebrew and Nix installation and distribution prerequisites.
+- Verify universal CLI packaging, installation, and a two-simulator shard run.
+- Preserve configuration and metadata schema 1.0.0.
+
 ## 0.1.0 — 2026-08-25
 
 - Initial public preview of XCEasy Runner.
