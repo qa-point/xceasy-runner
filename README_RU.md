@@ -56,7 +56,8 @@ CLI уважает заданный `DEVELOPER_DIR`, затем проверяе
 Установка публичного релиза через Homebrew:
 
 ```bash
-brew install qa-point/tap/xceasyctl
+brew tap qa-point/runner https://github.com/qa-point/xceasy-runner.git
+brew install qa-point/runner/xceasyctl
 xceasyctl version
 ```
 

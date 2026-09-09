@@ -1,0 +1,33 @@
+name: Homebrew
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: homebrew-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  install:
+    name: Install and test Homebrew formula
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Install this revision as a tap
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+        run: |
+          brew tap --custom-remote qa-point/runner "$GITHUB_WORKSPACE"
+          brew install qa-point/runner/xceasyctl
+          brew audit --strict qa-point/runner/xceasyctl
+          brew test qa-point/runner/xceasyctl
+          xceasyctl validate-config examples/xceasy-runner.json

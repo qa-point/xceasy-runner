@@ -36,23 +36,35 @@ export PATH="$HOME/.local/bin:$PATH"
 
 ## Homebrew
 
-Установка из публичного tap QA Point:
+Репозиторий Runner одновременно является Homebrew tap. Формула находится в `Formula/xceasyctl.rb`; при подключении явно укажите Git URL:
 
 ```bash
-brew install qa-point/tap/xceasyctl
+brew tap qa-point/runner https://github.com/qa-point/xceasy-runner.git
+brew install qa-point/runner/xceasyctl
 xceasyctl version
-brew test qa-point/tap/xceasyctl
+brew test qa-point/runner/xceasyctl
 ```
 
 Обновление и удаление:
 
 ```bash
 brew update
-brew upgrade qa-point/tap/xceasyctl
+brew upgrade qa-point/runner/xceasyctl
 brew uninstall xceasyctl
 ```
 
 Формула закрепляет URL и SHA-256 релизного архива и устанавливает приватный runtime без запуска установщика из архива.
+
+### Переход со старого tap
+
+Если Runner установлен из `qa-point/tap`, перед командами выше удалите прежний пакет и отключите старый tap:
+
+```bash
+brew uninstall qa-point/tap/xceasyctl
+brew untap qa-point/tap
+```
+
+Это удаляет прежний пакет/tap Homebrew, а не конфигурацию ваших тестовых проектов. Затем подключите репозиторий Runner и установите `qa-point/runner/xceasyctl` командами выше.
 
 ## Nix
 

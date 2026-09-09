@@ -56,7 +56,8 @@ Homebrew, Nix, and initial configuration walkthrough.
 Install the public release with Homebrew:
 
 ```bash
-brew install qa-point/tap/xceasyctl
+brew tap qa-point/runner https://github.com/qa-point/xceasy-runner.git
+brew install qa-point/runner/xceasyctl
 xceasyctl version
 ```
 

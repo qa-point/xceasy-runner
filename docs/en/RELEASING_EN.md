@@ -33,10 +33,17 @@ The hosted release workflow does not run UI tests. Perform the documented real t
 
 GitHub Release is the source of truth for the binary archive and checksum.
 
-Homebrew uses the public `qa-point/homebrew-tap`. After each verified release, copy the generated
-`xceasyctl.rb` asset to `Formula/xceasyctl.rb` in the tap and verify
-`brew install qa-point/tap/xceasyctl`. Automate tap updates only with an approved process, using
-a scoped secret that can write to the tap and nothing else.
+Homebrew uses this repository directly, with the maintained formula at `Formula/xceasyctl.rb`.
+After publishing each verified release, download its generated `xceasyctl.rb` asset into that
+path and open a pull request in this repository. Keep the formula on the latest published
+archive while preparing a future release; do not point it at an asset that does not exist yet.
+The Homebrew workflow installs and tests the formula from the PR revision. No separate tap
+repository or cross-repository write secret is needed.
+
+```bash
+brew tap qa-point/runner https://github.com/qa-point/xceasy-runner.git
+brew install qa-point/runner/xceasyctl
+```
 
 Nix distribution lives in the root `flake.nix`. It builds from an immutable release tag and exposes
 only `aarch64-darwin` and `x86_64-darwin`. The `nixpkgs` input is pinned by commit and `flake.lock`;

@@ -36,21 +36,32 @@ The installer preserves macOS quarantine. Current archives have an ad-hoc signat
 
 ## Homebrew
 
-Install from the public QA Point tap:
+The Runner repository is also the Homebrew tap. Its formula lives in `Formula/xceasyctl.rb`; specify the Git URL when tapping:
 
 ```bash
-brew tap qa-point/tap
-brew install xceasyctl
+brew tap qa-point/runner https://github.com/qa-point/xceasy-runner.git
+brew install qa-point/runner/xceasyctl
 ```
 
 Upgrade or uninstall with:
 
 ```bash
-brew upgrade xceasyctl
+brew upgrade qa-point/runner/xceasyctl
 brew uninstall xceasyctl
 ```
 
 The formula pins the release archive and SHA-256 and installs the private runtime without running the archive installer.
+
+### Migrating from the previous tap
+
+If you installed from `qa-point/tap`, replace that installation before using the commands above:
+
+```bash
+brew uninstall qa-point/tap/xceasyctl
+brew untap qa-point/tap
+```
+
+This removes the old Homebrew package/tap, not your test-project configuration. Then tap the Runner repository and install `qa-point/runner/xceasyctl` as shown above.
 
 ## Nix
 
