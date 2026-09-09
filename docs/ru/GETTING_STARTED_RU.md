@@ -19,16 +19,16 @@ XCEasy предоставляет test metadata, Allure results, logs и diagnos
 Скачайте archive и checksum одной версии со страницы Releases:
 
 ```bash
-shasum -a 256 -c xceasy-runner-0.1.1-macos-universal.tar.gz.sha256
-tar -xzf xceasy-runner-0.1.1-macos-universal.tar.gz
-sudo ./xceasy-runner-0.1.1/install.sh /usr/local
+shasum -a 256 -c xceasy-runner-0.1.2-macos-universal.tar.gz.sha256
+tar -xzf xceasy-runner-0.1.2-macos-universal.tar.gz
+sudo ./xceasy-runner-0.1.2/install.sh /usr/local
 xceasyctl version
 ```
 
 Без `sudo` установите в пользовательский prefix:
 
 ```bash
-./xceasy-runner-0.1.1/install.sh "$HOME/.local"
+./xceasy-runner-0.1.2/install.sh "$HOME/.local"
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
@@ -68,20 +68,20 @@ brew untap qa-point/tap
 
 ## Nix
 
-Нужны включённые `nix-command` и `flakes`, macOS и полный Xcode. Релиз v0.1.1 проверен на `aarch64-darwin`; его старая версия Nixpkgs не позволяет вычислить пакет для Intel. В обновлённых исходниках закреплена Nixpkgs 26.05, чтобы восстановить `x86_64-darwin`; до следующего релиза на Intel используйте обновлённый commit. Для самой сборки Intel нужен Intel builder.
+Нужны включённые `nix-command` и `flakes`, macOS и полный Xcode. Версия 0.1.2 использует Nixpkgs 26.05 и поддерживает `aarch64-darwin` и `x86_64-darwin`; нативные сборки проверяются в CI. Для сборки Intel нужен Intel builder.
 
 
 Flake поддерживает только `aarch64-darwin` и `x86_64-darwin`, потому что выполнение XCUITest требует macOS и Xcode:
 
 ```bash
-nix profile add github:qa-point/xceasy-runner/v0.1.1
+nix profile add github:qa-point/xceasy-runner/v0.1.2
 xceasyctl version
 ```
 
 Без постоянной установки:
 
 ```bash
-nix run github:qa-point/xceasy-runner/v0.1.1 -- version
+nix run github:qa-point/xceasy-runner/v0.1.2 -- version
 ```
 
 Для локального checkout используйте `nix build` или `nix run . -- version`. Release tag обязателен
