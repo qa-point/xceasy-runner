@@ -18,9 +18,10 @@ esac
 }
 
 mkdir -p "$prefix/bin" "$prefix/libexec"
-install -m 755 "$package_root/bin/xceasyctl" "$prefix/bin/xceasyctl"
+# Preserve macOS download provenance; Gatekeeper decisions belong to the user.
+cp -p "$package_root/bin/xceasyctl" "$prefix/bin/xceasyctl"
+chmod 755 "$prefix/bin/xceasyctl"
 mkdir -p "$prefix/libexec/xceasy-runner"
 cp -R "$package_root/libexec/xceasy-runner/." "$prefix/libexec/xceasy-runner/"
-xattr -dr com.apple.quarantine "$prefix/bin/xceasyctl" "$prefix/libexec/xceasy-runner" 2>/dev/null || true
 
 echo "Installed xceasyctl to $prefix/bin/xceasyctl"

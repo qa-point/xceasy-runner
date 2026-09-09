@@ -3,6 +3,14 @@ name: Release
 on:
   push:
     tags: ['v*']
+  pull_request:
+    paths:
+      - '.github/workflows/release.yml'
+      - 'packaging/**'
+      - 'scripts/**'
+      - 'Sources/**'
+      - 'Package.swift'
+      - 'release-metadata.json'
   workflow_dispatch:
     inputs:
       tag:
@@ -11,27 +19,43 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: release-${{ github.ref_name }}
+  group: release-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Verify, package, and publish
-    runs-on: macos-14
+  build:
+    name: Verify and package
+    runs-on: macos-15
     timeout-minutes: 20
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      version: ${{ steps.metadata.outputs.version }}
+      archive-sha256: ${{ steps.metadata.outputs.archive-sha256 }}
     env:
       RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
-      GH_TOKEN: ${{ github.token }}
-      GH_REPO: ${{ github.repository }}
     steps:
-      - name: Check out release tag
-        uses: actions/checkout@v5
+      - name: Validate release ref
+        if: github.event_name != 'pull_request'
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 65
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch && "$GITHUB_REF" != refs/heads/main ]]; then
+            echo 'Manual publication must use the workflow on main.' >&2
+            exit 65
+          fi
+
+      - name: Check out source
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
-          ref: ${{ env.RELEASE_TAG }}
+          ref: ${{ github.event_name == 'pull_request' && github.sha || format('refs/tags/{0}', env.RELEASE_TAG) }}
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify release ancestry
+        if: github.event_name != 'pull_request'
+        run: git merge-base --is-ancestor HEAD origin/main
 
       - name: Select Xcode
         run: |
@@ -40,55 +64,112 @@ jobs:
           swift --version
 
       - name: Install mise tools
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3
 
       - name: Install contract check dependencies
         run: brew install ripgrep
 
       - name: Verify tag and release metadata
+        if: github.event_name != 'pull_request'
         run: ./scripts/verify-release.sh "$RELEASE_TAG"
 
       - name: Run contract suite
         run: ./scripts/check.sh
 
-      - name: Build universal release CLI
-        run: ./scripts/build-cli.sh release
-
       - name: Build release package
+        id: metadata
         run: |
+          version=$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' release-metadata.json)
           ./scripts/package-cli.sh
           ./scripts/build-release-notes.sh dist/release-notes.md
-          archive=$(find dist -maxdepth 1 -name '*.tar.gz' -print -quit)
+          archive="dist/xceasy-runner-$version-macos-universal.tar.gz"
           ./scripts/render-homebrew-formula.sh "$archive" dist/xceasyctl.rb
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "archive-sha256=$(shasum -a 256 "$archive" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
 
       - name: Verify packaged binary and checksum
+        env:
+          VERSION: ${{ steps.metadata.outputs.version }}
         run: |
-          archive=$(find dist -maxdepth 1 -name '*.tar.gz' -print -quit)
-          (cd dist && shasum -a 256 -c "$(basename "$archive.sha256")")
+          archive="xceasy-runner-$VERSION-macos-universal.tar.gz"
+          (cd dist && shasum -a 256 -c "$archive.sha256")
           stage=$(mktemp -d)
-          tar -xzf "$archive" -C "$stage"
-          binary=$(find "$stage" -path '*/bin/xceasyctl' -type f -print -quit)
+          trap 'rm -rf "$stage"' EXIT
+          tar -xzf "dist/$archive" -C "$stage"
+          binary="$stage/xceasy-runner-$VERSION/bin/xceasyctl"
           lipo "$binary" -verify_arch arm64 x86_64
           "$binary" version
           codesign --verify --strict --verbose=2 "$binary"
 
-      - name: Publish GitHub Release
+      - name: Upload verified package
+        id: upload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-package
+          path: |
+            dist/*.tar.gz
+            dist/*.tar.gz.sha256
+            dist/xceasyctl.rb
+            dist/release-notes.md
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Attest and publish
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    env:
+      VERSION: ${{ needs.build.outputs.version }}
+      ARCHIVE_SHA256: ${{ needs.build.outputs.archive-sha256 }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      # This job never checks out or executes source or scripts from the package.
+      - name: Download verified package
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          artifact-ids: ${{ needs.build.outputs.artifact-id }}
+          path: dist
+          merge-multiple: true
+
+      - name: Verify downloaded archive
         run: |
-          version=$(jq -r '.version' release-metadata.json)
-          gh release create "$RELEASE_TAG" \
-            dist/*.tar.gz \
-            dist/*.tar.gz.sha256 \
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 65
+          [[ "$ARCHIVE_SHA256" =~ ^[a-f0-9]{64}$ ]] || exit 65
+          cd dist
+          echo "$ARCHIVE_SHA256  xceasy-runner-$VERSION-macos-universal.tar.gz" | sha256sum --check --strict
+
+      - name: Attest release assets
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: |
+            dist/*.tar.gz
+            dist/*.tar.gz.sha256
+            dist/xceasyctl.rb
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v$VERSION" \
+            "dist/xceasy-runner-$VERSION-macos-universal.tar.gz" \
+            "dist/xceasy-runner-$VERSION-macos-universal.tar.gz.sha256" \
             dist/xceasyctl.rb \
             --repo "$GH_REPO" \
             --verify-tag \
             --fail-on-no-commits \
             --latest \
-            --title "XCEasy Runner $version" \
+            --title "XCEasy Runner $VERSION" \
             --notes-file dist/release-notes.md \
             --generate-notes
 
       - name: Verify published release
-        run: |
-          gh release view "$RELEASE_TAG" \
-            --repo "$GH_REPO" \
-            --json url,tagName,isDraft,isPrerelease,assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release view "v$VERSION" --repo "$GH_REPO" --json url,tagName,isDraft,isPrerelease,assets

@@ -53,7 +53,7 @@ The CLI honors an explicit `DEVELOPER_DIR`, then checks `xcode-select`, `/Applic
 See [Installation and first run](docs/en/GETTING_STARTED_EN.md) for the complete GitHub Release,
 Homebrew, Nix, and initial configuration walkthrough.
 
-After the first public release, install with Homebrew:
+Install the public release with Homebrew:
 
 ```bash
 brew install qa-point/tap/xceasyctl
@@ -63,18 +63,17 @@ xceasyctl version
 Or install the immutable release tag with Nix:
 
 ```bash
-nix profile install github:qa-point/xceasy-runner/v0.1.0
+nix profile add github:qa-point/xceasy-runner/v0.1.1
 xceasyctl version
 ```
 
 Run through Nix without installing:
 
 ```bash
-nix run github:qa-point/xceasy-runner/v0.1.0 -- version
+nix run github:qa-point/xceasy-runner/v0.1.1 -- version
 ```
 
-These remote channels become available after the repository, GitHub Release, and Homebrew tap are
-published. Until then, use the source installation below.
+Homebrew and the Apple Silicon Nix installation are verified against v0.1.1. For Intel Nix, use the updated source revision described in the installation guide; the old release pin cannot evaluate Intel macOS.
 
 ### Build and install the CLI
 

@@ -33,10 +33,10 @@ Hosted release workflow не запускает UI-тесты. Если меня
 
 GitHub Release — источник истины для binary archive и checksum.
 
-Homebrew использует отдельный tap `qa-point/homebrew-tap`. После первого release скопируйте
+Homebrew использует отдельный tap `qa-point/homebrew-tap`. После каждого проверенного release скопируйте
 сгенерированный asset `xceasyctl.rb` в `Formula/xceasyctl.rb` tap-репозитория и проверьте
 `brew install qa-point/tap/xceasyctl`. Автоматический update tap следует включать отдельным job
-только после создания репозитория и scoped secret с write-доступом исключительно к tap.
+только после согласования scoped secret с write-доступом исключительно к tap.
 
 Nix distribution находится в корневом `flake.nix`: он собирает CLI из immutable release tag и
 поддерживает только `aarch64-darwin`/`x86_64-darwin`. `nixpkgs` закреплён commit hash и
@@ -61,7 +61,14 @@ git push origin v0.1.0
 
 Workflow не создаёт tag автоматически и использует `--verify-tag`. Ручной `workflow_dispatch` принимает только уже существующий tag.
 
-Для repository settings нужны Actions permission `Read and write permissions`; workflow сам ограничен `contents: write`.
 
 Release workflow не обращается к соседним репозиториям и не требует secret
 `XC_EASY_INTEGRATION_TOKEN`.
+
+## Изоляция публикации и происхождение артефактов
+
+Настройки репозитория по умолчанию остаются read-only. Сборка имеет только `contents: read`. Отдельная job публикации скачивает артефакт по ID, проверяет его digest и создаёт GitHub attestations. Только она получает `contents: write`, `id-token: write`, `attestations: write`, `artifact-metadata: write`; код и скрипты пакета там не исполняются. GH_TOKEN передаётся только шагам gh. Pull request проверяет и собирает пакет, но не публикует релиз. Ручная публикация использует workflow main; релизный тег должен ссылаться на commit, достижимый из main.
+
+Будущие релизы из обновлённого workflow позволяют проверить происхождение командой `gh attestation verify ARCHIVE --repo qa-point/xceasy-runner --signer-workflow qa-point/xceasy-runner/.github/workflows/release.yml`. У существующего v0.1.1 таких attestations нет. Они не заменяют Apple Developer ID/notarization.
+
+Homebrew tap `qa-point/homebrew-tap` публичный. После каждого проверенного релиза обновляйте формулу из фактического архива; автоматизация записи в tap требует отдельно согласованного доступа.

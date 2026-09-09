@@ -19,51 +19,57 @@ XCEasy предоставляет test metadata, Allure results, logs и diagnos
 Скачайте archive и checksum одной версии со страницы Releases:
 
 ```bash
-shasum -a 256 -c xceasy-runner-0.1.0-macos-universal.tar.gz.sha256
-tar -xzf xceasy-runner-0.1.0-macos-universal.tar.gz
-sudo ./xceasy-runner-0.1.0/install.sh /usr/local
+shasum -a 256 -c xceasy-runner-0.1.1-macos-universal.tar.gz.sha256
+tar -xzf xceasy-runner-0.1.1-macos-universal.tar.gz
+sudo ./xceasy-runner-0.1.1/install.sh /usr/local
 xceasyctl version
 ```
 
 Без `sudo` установите в пользовательский prefix:
 
 ```bash
-./xceasy-runner-0.1.0/install.sh "$HOME/.local"
+./xceasy-runner-0.1.1/install.sh "$HOME/.local"
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
+Установщик сохраняет quarantine macOS. Текущие архивы имеют ad-hoc подпись, без Developer ID/notarization. Если Gatekeeper блокирует запуск, используйте проверенную сборку из исходников либо стандартное разрешение macOS для доверенного ПО. Архив v0.1.1 выпущен до исправления установщика; Homebrew и Nix не запускают этот установщик.
+
 ## Homebrew
 
-После публикации tap установка будет выглядеть так:
+Установка из публичного tap QA Point:
 
 ```bash
-brew tap qa-point/tap
-brew install xceasyctl
+brew install qa-point/tap/xceasyctl
+xceasyctl version
+brew test qa-point/tap/xceasyctl
 ```
 
 Обновление и удаление:
 
 ```bash
-brew upgrade xceasyctl
+brew update
+brew upgrade qa-point/tap/xceasyctl
 brew uninstall xceasyctl
 ```
 
-До появления `qa-point/homebrew-tap` этот канал считается подготовленным, но не опубликованным;
-используйте GitHub Release или локальную сборку.
+Формула закрепляет URL и SHA-256 релизного архива и устанавливает приватный runtime без запуска установщика из архива.
 
 ## Nix
+
+Нужны включённые `nix-command` и `flakes`, macOS и полный Xcode. Релиз v0.1.1 проверен на `aarch64-darwin`; его старая версия Nixpkgs не позволяет вычислить пакет для Intel. В обновлённых исходниках закреплена Nixpkgs 26.05, чтобы восстановить `x86_64-darwin`; до следующего релиза на Intel используйте обновлённый commit. Для самой сборки Intel нужен Intel builder.
+
 
 Flake поддерживает только `aarch64-darwin` и `x86_64-darwin`, потому что выполнение XCUITest требует macOS и Xcode:
 
 ```bash
-nix profile install github:qa-point/xceasy-runner/v0.1.0
+nix profile add github:qa-point/xceasy-runner/v0.1.1
 xceasyctl version
 ```
 
 Без постоянной установки:
 
 ```bash
-nix run github:qa-point/xceasy-runner/v0.1.0 -- version
+nix run github:qa-point/xceasy-runner/v0.1.1 -- version
 ```
 
 Для локального checkout используйте `nix build` или `nix run . -- version`. Release tag обязателен

@@ -9,3 +9,5 @@ English · [Русский](../../ru/spec/06_COMPILED_CLI_DISTRIBUTION_RU.md) ·
 - `make package` creates a versioned `tar.gz` and SHA-256 checksum.
 - Runtime checks `XCEASY_RUNNER_ROOT`, installed `libexec`, then a source checkout.
 - `bin/xceasy` is not public API and remains a private compatibility engine.
+
+Installers preserve macOS quarantine instead of removing it. CI builds with read-only permissions; a separate job attests and publishes verified artifacts. Homebrew uses a checksummed universal release; Nix pins a reviewed stable Nixpkgs revision for both Darwin architectures. Apple Developer ID/notarization remain unconfigured without a signing identity.

@@ -19,22 +19,24 @@ distributes, and aggregates. A standalone XCTest target without XCEasy is not a 
 Download the archive and checksum for the same version from Releases:
 
 ```bash
-shasum -a 256 -c xceasy-runner-0.1.0-macos-universal.tar.gz.sha256
-tar -xzf xceasy-runner-0.1.0-macos-universal.tar.gz
-sudo ./xceasy-runner-0.1.0/install.sh /usr/local
+shasum -a 256 -c xceasy-runner-0.1.1-macos-universal.tar.gz.sha256
+tar -xzf xceasy-runner-0.1.1-macos-universal.tar.gz
+sudo ./xceasy-runner-0.1.1/install.sh /usr/local
 xceasyctl version
 ```
 
 Use a user-owned prefix to avoid `sudo`:
 
 ```bash
-./xceasy-runner-0.1.0/install.sh "$HOME/.local"
+./xceasy-runner-0.1.1/install.sh "$HOME/.local"
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
+The installer preserves macOS quarantine. Current archives have an ad-hoc signature, not Developer ID/notarization. If Gatekeeper blocks execution, prefer a reviewed source build or follow macOS approval controls for software you trust; the installer does not disable them. Existing v0.1.1 archives predate the installer fix; use Homebrew or Nix to avoid that archive installer.
+
 ## Homebrew
 
-After the tap is published, installation will be:
+Install from the public QA Point tap:
 
 ```bash
 brew tap qa-point/tap
@@ -48,22 +50,21 @@ brew upgrade xceasyctl
 brew uninstall xceasyctl
 ```
 
-Until `qa-point/homebrew-tap` exists, this channel is prepared but not published; use a GitHub
-Release or a local source build.
+The formula pins the release archive and SHA-256 and installs the private runtime without running the archive installer.
 
 ## Nix
 
-The flake supports `aarch64-darwin` and `x86_64-darwin` only because XCUITest execution requires macOS and Xcode:
+Nix requires `nix-command` and `flakes` to be enabled. XCUITest requires macOS and full Xcode. Release v0.1.1 was verified on `aarch64-darwin`; its old Nixpkgs pin cannot evaluate Intel macOS. The updated source pins Nixpkgs 26.05 to restore `x86_64-darwin` evaluation; use the updated revision for Intel until the next release. An Intel build still requires an Intel builder:
 
 ```bash
-nix profile install github:qa-point/xceasy-runner/v0.1.0
+nix profile add github:qa-point/xceasy-runner/v0.1.1
 xceasyctl version
 ```
 
 Run without installing:
 
 ```bash
-nix run github:qa-point/xceasy-runner/v0.1.0 -- version
+nix run github:qa-point/xceasy-runner/v0.1.1 -- version
 ```
 
 Use `nix build` or `nix run . -- version` in a local checkout. A release tag is required for a

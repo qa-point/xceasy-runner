@@ -19,6 +19,7 @@ class Xceasyctl < Formula
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/xceasyctl version")
+    assert_match "xceasy-runner #{version}", shell_output("#{bin}/xceasyctl version")
+    assert_match "--plan-only", shell_output("#{bin}/xceasyctl help")
   end
 end

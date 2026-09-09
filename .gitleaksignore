@@ -1,0 +1,3 @@
+# False positives: ordinary RU/EN configuration prose, verified against the historical commit.
+cf5ca51c5ec6bbd2393af2a7a4925efc269ed1b8:docs/ru/spec/01_CONFIGURATION_AND_PREFLIGHT_RU.md:generic-api-key:3
+cf5ca51c5ec6bbd2393af2a7a4925efc269ed1b8:docs/en/spec/01_CONFIGURATION_AND_PREFLIGHT_EN.md:generic-api-key:3
