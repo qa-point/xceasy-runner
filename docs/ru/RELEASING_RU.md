@@ -77,4 +77,3 @@ Release workflow не обращается к соседним репозито�
 Настройки репозитория по умолчанию остаются read-only. Сборка имеет только `contents: read`. Отдельная job публикации скачивает артефакт по ID, проверяет его digest и создаёт GitHub attestations. Только она получает `contents: write`, `id-token: write`, `attestations: write`, `artifact-metadata: write`; код и скрипты пакета там не исполняются. GH_TOKEN передаётся только шагам gh. Pull request проверяет и собирает пакет, но не публикует релиз. Ручная публикация использует workflow main; релизный тег должен ссылаться на commit, достижимый из main.
 
 Будущие релизы из обновлённого workflow позволяют проверить происхождение командой `gh attestation verify ARCHIVE --repo qa-point/xceasy-runner --signer-workflow qa-point/xceasy-runner/.github/workflows/release.yml`. У существующего v0.1.1 таких attestations нет. Они не заменяют Apple Developer ID/notarization.
-
