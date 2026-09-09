@@ -19,16 +19,16 @@ XCEasy предоставляет test metadata, Allure results, logs и diagnos
 Скачайте archive и checksum одной версии со страницы Releases:
 
 ```bash
-shasum -a 256 -c xceasy-runner-0.1.2-macos-universal.tar.gz.sha256
-tar -xzf xceasy-runner-0.1.2-macos-universal.tar.gz
-sudo ./xceasy-runner-0.1.2/install.sh /usr/local
+shasum -a 256 -c xceasy-runner-0.1.3-macos-universal.tar.gz.sha256
+tar -xzf xceasy-runner-0.1.3-macos-universal.tar.gz
+sudo ./xceasy-runner-0.1.3/install.sh /usr/local
 xceasyctl version
 ```
 
 Без `sudo` установите в пользовательский prefix:
 
 ```bash
-./xceasy-runner-0.1.2/install.sh "$HOME/.local"
+./xceasy-runner-0.1.3/install.sh "$HOME/.local"
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
@@ -74,14 +74,14 @@ brew untap qa-point/tap
 Flake поддерживает только `aarch64-darwin` и `x86_64-darwin`, потому что выполнение XCUITest требует macOS и Xcode:
 
 ```bash
-nix profile add github:qa-point/xceasy-runner/v0.1.2
+nix profile add github:qa-point/xceasy-runner/v0.1.3
 xceasyctl version
 ```
 
 Без постоянной установки:
 
 ```bash
-nix run github:qa-point/xceasy-runner/v0.1.2 -- version
+nix run github:qa-point/xceasy-runner/v0.1.3 -- version
 ```
 
 Для локального checkout используйте `nix build` или `nix run . -- version`. Release tag обязателен

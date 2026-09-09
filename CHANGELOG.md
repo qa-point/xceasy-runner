@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 — 2026-09-09
+
+- Fix installed CLI runtime discovery when invoked by bare name through PATH from outside the source checkout.
+- Resolve the loaded executable image before following symlinks, rather than relying on argv[0].
+- Add regression coverage for PATH, symlinks, unrelated working directories, and installation prefixes with spaces; test the Homebrew command through PATH.
+
 ## 0.1.2 — 2026-09-09
 
 - Harden public CI, pin GitHub Actions, scan secrets, and document private vulnerability reporting.

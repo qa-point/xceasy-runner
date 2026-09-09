@@ -19,6 +19,8 @@ class Xceasyctl < Formula
   end
 
   test do
+    ENV.prepend_path "PATH", bin
+    assert_match "xceasy-runner #{version}", shell_output("/bin/zsh -f -c 'xceasyctl version'")
     assert_match "xceasy-runner #{version}", shell_output("#{bin}/xceasyctl version")
     assert_match "--plan-only", shell_output("#{bin}/xceasyctl help")
   end

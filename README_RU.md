@@ -64,14 +64,14 @@ xceasyctl version
 Установка immutable release tag через Nix:
 
 ```bash
-nix profile add github:qa-point/xceasy-runner/v0.1.2
+nix profile add github:qa-point/xceasy-runner/v0.1.3
 xceasyctl version
 ```
 
 Запуск через Nix без установки:
 
 ```bash
-nix run github:qa-point/xceasy-runner/v0.1.2 -- version
+nix run github:qa-point/xceasy-runner/v0.1.3 -- version
 ```
 
 Версия 0.1.2 поддерживает Nix на Apple Silicon и Intel macOS; нативные сборки проверяются в CI. Формула Homebrew следует за последним опубликованным релизом.

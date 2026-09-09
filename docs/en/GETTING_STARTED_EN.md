@@ -19,16 +19,16 @@ distributes, and aggregates. A standalone XCTest target without XCEasy is not a 
 Download the archive and checksum for the same version from Releases:
 
 ```bash
-shasum -a 256 -c xceasy-runner-0.1.2-macos-universal.tar.gz.sha256
-tar -xzf xceasy-runner-0.1.2-macos-universal.tar.gz
-sudo ./xceasy-runner-0.1.2/install.sh /usr/local
+shasum -a 256 -c xceasy-runner-0.1.3-macos-universal.tar.gz.sha256
+tar -xzf xceasy-runner-0.1.3-macos-universal.tar.gz
+sudo ./xceasy-runner-0.1.3/install.sh /usr/local
 xceasyctl version
 ```
 
 Use a user-owned prefix to avoid `sudo`:
 
 ```bash
-./xceasy-runner-0.1.2/install.sh "$HOME/.local"
+./xceasy-runner-0.1.3/install.sh "$HOME/.local"
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
@@ -68,14 +68,14 @@ This removes the old Homebrew package/tap, not your test-project configuration. 
 Nix requires `nix-command` and `flakes` to be enabled. XCUITest requires macOS and full Xcode. Version 0.1.2 pins Nixpkgs 26.05 and supports `aarch64-darwin` and `x86_64-darwin`, with native builds checked in CI. An Intel build requires an Intel builder:
 
 ```bash
-nix profile add github:qa-point/xceasy-runner/v0.1.2
+nix profile add github:qa-point/xceasy-runner/v0.1.3
 xceasyctl version
 ```
 
 Run without installing:
 
 ```bash
-nix run github:qa-point/xceasy-runner/v0.1.2 -- version
+nix run github:qa-point/xceasy-runner/v0.1.3 -- version
 ```
 
 Use `nix build` or `nix run . -- version` in a local checkout. A release tag is required for a

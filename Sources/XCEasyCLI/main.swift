@@ -1,5 +1,6 @@
 import Darwin
 import Foundation
+import MachO
 
 private enum ExitCode {
     static let usage: Int32 = 64
@@ -59,6 +60,17 @@ private func validate(arguments: [String]) throws {
     }
 }
 
+/// Resolves the loaded executable independently of the shell's argv[0] spelling.
+private func executableURL() throws -> URL {
+    var size: UInt32 = 0
+    _NSGetExecutablePath(nil, &size)
+    var buffer = [CChar](repeating: 0, count: Int(size))
+    guard size > 0, _NSGetExecutablePath(&buffer, &size) == 0 else {
+        throw CLIError(message: "Could not locate the running executable", exitCode: ExitCode.unavailable)
+    }
+    return URL(fileURLWithPath: String(cString: buffer)).resolvingSymlinksInPath()
+}
+
 private func runnerRoot() throws -> URL {
     let fileManager = FileManager.default
     if let explicitRoot = ProcessInfo.processInfo.environment["XCEASY_RUNNER_ROOT"], !explicitRoot.isEmpty {
@@ -69,7 +81,7 @@ private func runnerRoot() throws -> URL {
         return root
     }
 
-    let executable = URL(fileURLWithPath: CommandLine.arguments[0]).resolvingSymlinksInPath()
+    let executable = try executableURL()
     let installedRoot = executable.deletingLastPathComponent()
         .deletingLastPathComponent()
         .appendingPathComponent("libexec/xceasy-runner")
