@@ -53,28 +53,28 @@ CLI уважает заданный `DEVELOPER_DIR`, затем проверяе
 Полная пошаговая инструкция по GitHub Release, Homebrew, Nix и первому config находится в
 [«Установка и первый запуск»](docs/ru/GETTING_STARTED_RU.md).
 
-После первого публичного release установка через Homebrew:
+Установка публичного релиза через Homebrew:
 
 ```bash
-brew install qa-point/tap/xceasyctl
+brew tap qa-point/runner https://github.com/qa-point/xceasy-runner.git
+brew install qa-point/runner/xceasyctl
 xceasyctl version
 ```
 
 Установка immutable release tag через Nix:
 
 ```bash
-nix profile install github:qa-point/xceasy-runner/v0.1.0
+nix profile add github:qa-point/xceasy-runner/v0.1.1
 xceasyctl version
 ```
 
 Запуск через Nix без установки:
 
 ```bash
-nix run github:qa-point/xceasy-runner/v0.1.0 -- version
+nix run github:qa-point/xceasy-runner/v0.1.1 -- version
 ```
 
-Удалённые каналы заработают после публикации репозитория, GitHub Release и Homebrew tap. До этого
-используйте сборку из исходников ниже.
+Homebrew и установка Nix на Apple Silicon проверены с v0.1.1. Для Intel Nix используйте обновлённый commit из инструкции установки: старая версия Nixpkgs в релизе не поддерживает Intel macOS.
 
 ### Сборка и установка CLI
 

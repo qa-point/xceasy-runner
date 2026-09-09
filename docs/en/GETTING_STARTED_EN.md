@@ -19,51 +19,63 @@ distributes, and aggregates. A standalone XCTest target without XCEasy is not a 
 Download the archive and checksum for the same version from Releases:
 
 ```bash
-shasum -a 256 -c xceasy-runner-0.1.0-macos-universal.tar.gz.sha256
-tar -xzf xceasy-runner-0.1.0-macos-universal.tar.gz
-sudo ./xceasy-runner-0.1.0/install.sh /usr/local
+shasum -a 256 -c xceasy-runner-0.1.1-macos-universal.tar.gz.sha256
+tar -xzf xceasy-runner-0.1.1-macos-universal.tar.gz
+sudo ./xceasy-runner-0.1.1/install.sh /usr/local
 xceasyctl version
 ```
 
 Use a user-owned prefix to avoid `sudo`:
 
 ```bash
-./xceasy-runner-0.1.0/install.sh "$HOME/.local"
+./xceasy-runner-0.1.1/install.sh "$HOME/.local"
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
+The installer preserves macOS quarantine. Current archives have an ad-hoc signature, not Developer ID/notarization. If Gatekeeper blocks execution, prefer a reviewed source build or follow macOS approval controls for software you trust; the installer does not disable them. Existing v0.1.1 archives predate the installer fix; use Homebrew or Nix to avoid that archive installer.
+
 ## Homebrew
 
-After the tap is published, installation will be:
+The Runner repository is also the Homebrew tap. Its formula lives in `Formula/xceasyctl.rb`; specify the Git URL when tapping:
 
 ```bash
-brew tap qa-point/tap
-brew install xceasyctl
+brew tap qa-point/runner https://github.com/qa-point/xceasy-runner.git
+brew install qa-point/runner/xceasyctl
 ```
 
 Upgrade or uninstall with:
 
 ```bash
-brew upgrade xceasyctl
+brew upgrade qa-point/runner/xceasyctl
 brew uninstall xceasyctl
 ```
 
-Until `qa-point/homebrew-tap` exists, this channel is prepared but not published; use a GitHub
-Release or a local source build.
+The formula pins the release archive and SHA-256 and installs the private runtime without running the archive installer.
+
+### Migrating from the previous tap
+
+If you installed from `qa-point/tap`, replace that installation before using the commands above:
+
+```bash
+brew uninstall qa-point/tap/xceasyctl
+brew untap qa-point/tap
+```
+
+This removes the old Homebrew package/tap, not your test-project configuration. Then tap the Runner repository and install `qa-point/runner/xceasyctl` as shown above.
 
 ## Nix
 
-The flake supports `aarch64-darwin` and `x86_64-darwin` only because XCUITest execution requires macOS and Xcode:
+Nix requires `nix-command` and `flakes` to be enabled. XCUITest requires macOS and full Xcode. Release v0.1.1 was verified on `aarch64-darwin`; its old Nixpkgs pin cannot evaluate Intel macOS. The updated source pins Nixpkgs 26.05 to restore `x86_64-darwin` evaluation; use the updated revision for Intel until the next release. An Intel build still requires an Intel builder:
 
 ```bash
-nix profile install github:qa-point/xceasy-runner/v0.1.0
+nix profile add github:qa-point/xceasy-runner/v0.1.1
 xceasyctl version
 ```
 
 Run without installing:
 
 ```bash
-nix run github:qa-point/xceasy-runner/v0.1.0 -- version
+nix run github:qa-point/xceasy-runner/v0.1.1 -- version
 ```
 
 Use `nix build` or `nix run . -- version` in a local checkout. A release tag is required for a

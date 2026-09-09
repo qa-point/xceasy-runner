@@ -33,10 +33,17 @@ The hosted release workflow does not run UI tests. Perform the documented real t
 
 GitHub Release is the source of truth for the binary archive and checksum.
 
-Homebrew uses a separate `qa-point/homebrew-tap`. After the first release, copy the generated
-`xceasyctl.rb` asset to `Formula/xceasyctl.rb` in the tap and verify
-`brew install qa-point/tap/xceasyctl`. Automate tap updates only after that repository exists, using
-a scoped secret that can write to the tap and nothing else.
+Homebrew uses this repository directly, with the maintained formula at `Formula/xceasyctl.rb`.
+After publishing each verified release, download its generated `xceasyctl.rb` asset into that
+path and open a pull request in this repository. Keep the formula on the latest published
+archive while preparing a future release; do not point it at an asset that does not exist yet.
+The Homebrew workflow installs and tests the formula from the PR revision. No separate tap
+repository or cross-repository write secret is needed.
+
+```bash
+brew tap qa-point/runner https://github.com/qa-point/xceasy-runner.git
+brew install qa-point/runner/xceasyctl
+```
 
 Nix distribution lives in the root `flake.nix`. It builds from an immutable release tag and exposes
 only `aarch64-darwin` and `x86_64-darwin`. The `nixpkgs` input is pinned by commit and `flake.lock`;
@@ -61,7 +68,11 @@ git push origin v0.1.0
 
 The workflow never creates a tag and uses `--verify-tag`. Manual `workflow_dispatch` also accepts an existing tag only.
 
-Repository settings must allow Actions `Read and write permissions`; the workflow itself is restricted to `contents: write`.
+Repository defaults remain read-only. The build job has `contents: read`; a separate publish job downloads the verified artifact by ID, checks its digest and creates GitHub provenance attestations before publication. Only that job has `contents: write`, `id-token: write`, `attestations: write`, and `artifact-metadata: write`. It never checks out or executes package code. GH_TOKEN is scoped to gh publication steps. Pull requests verify/package but cannot publish. Manual publication must use the workflow on main, and release tags must refer to commits reachable from main.
 
 The release workflow does not access sibling repositories and does not require an
 `XC_EASY_INTEGRATION_TOKEN` secret.
+
+## Verify provenance
+
+Future releases from the hardened workflow include GitHub attestations. Verify a downloaded archive with `gh attestation verify ARCHIVE --repo qa-point/xceasy-runner --signer-workflow qa-point/xceasy-runner/.github/workflows/release.yml`. The existing v0.1.1 release has no such attestation; do not claim it does. Attestations do not replace Apple Developer ID/notarization.

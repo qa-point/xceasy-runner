@@ -1,0 +1,45 @@
+name: Nix
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    name: Nix (${{ matrix.system }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            system: aarch64-darwin
+          - runner: macos-15-intel
+            system: x86_64-darwin
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.35.2/install
+      - name: Evaluate both platforms
+        run: nix flake check --no-build --all-systems
+      - name: Build and install on this platform
+        run: |
+          nix build .#xceasyctl
+          nix profile add --profile "$RUNNER_TEMP/xceasy-profile" .#xceasyctl
+          "$RUNNER_TEMP/xceasy-profile/bin/xceasyctl" version
+          "$RUNNER_TEMP/xceasy-profile/bin/xceasyctl" help
+          "$RUNNER_TEMP/xceasy-profile/bin/xceasyctl" validate-config examples/xceasy-runner.json

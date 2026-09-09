@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Harden public CI, pin GitHub Actions, scan secrets, and document private vulnerability reporting.
+- Separate read-only packaging from attested release publication.
+- Preserve download quarantine during archive installation.
+- Keep the Homebrew formula and installation CI in the Runner repository; restore Intel Nix evaluation with a pinned stable Nixpkgs revision.
+
 ## 0.1.1 — 2026-09-07
 
 - Install ripgrep for hosted CI and release verification.

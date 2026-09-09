@@ -1,7 +1,8 @@
 {
   description = "XCEasy Runner command-line tool";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/ac6b2166e7a9375683b8e98f860f273222337b16";
+  # Nixpkgs 26.05 still supports both Apple Silicon and Intel macOS.
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/555cb0f648dd138a7a3c250f4f4928767707c988";
 
   outputs = { self, nixpkgs }:
     let

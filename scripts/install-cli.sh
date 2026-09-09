@@ -19,7 +19,6 @@ mkdir -p "$libexec/scripts/lib"
 find "$repository_root/scripts/lib" -maxdepth 1 -type f -exec install -m 755 {} "$libexec/scripts/lib/" \;
 find "$repository_root/schemas" -maxdepth 1 -type f -name '*.json' -exec install -m 644 {} "$libexec/schemas/" \;
 install -m 644 "$repository_root/release-metadata.json" "$libexec/release-metadata.json"
-xattr -dr com.apple.quarantine "$prefix/bin/xceasyctl" "$libexec" 2>/dev/null || true
 
 echo "Installed compiled CLI: $prefix/bin/xceasyctl"
 echo "Installed private engine: $libexec"

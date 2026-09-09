@@ -33,10 +33,17 @@ Hosted release workflow не запускает UI-тесты. Если меня
 
 GitHub Release — источник истины для binary archive и checksum.
 
-Homebrew использует отдельный tap `qa-point/homebrew-tap`. После первого release скопируйте
-сгенерированный asset `xceasyctl.rb` в `Formula/xceasyctl.rb` tap-репозитория и проверьте
-`brew install qa-point/tap/xceasyctl`. Автоматический update tap следует включать отдельным job
-только после создания репозитория и scoped secret с write-доступом исключительно к tap.
+Homebrew использует этот репозиторий напрямую; поддерживаемая формула находится в `Formula/xceasyctl.rb`.
+После публикации каждого проверенного релиза скачайте его сгенерированный asset `xceasyctl.rb`
+в этот путь и откройте PR в этом же репозитории. При подготовке следующего релиза формула
+должна оставаться на последнем опубликованном архиве, а не ссылаться на ещё несуществующий asset.
+Homebrew workflow устанавливает и проверяет формулу из текущей ревизии PR. Отдельный tap-репозиторий
+и секрет с правами записи в другой репозиторий не нужны.
+
+```bash
+brew tap qa-point/runner https://github.com/qa-point/xceasy-runner.git
+brew install qa-point/runner/xceasyctl
+```
 
 Nix distribution находится в корневом `flake.nix`: он собирает CLI из immutable release tag и
 поддерживает только `aarch64-darwin`/`x86_64-darwin`. `nixpkgs` закреплён commit hash и
@@ -61,7 +68,12 @@ git push origin v0.1.0
 
 Workflow не создаёт tag автоматически и использует `--verify-tag`. Ручной `workflow_dispatch` принимает только уже существующий tag.
 
-Для repository settings нужны Actions permission `Read and write permissions`; workflow сам ограничен `contents: write`.
 
 Release workflow не обращается к соседним репозиториям и не требует secret
 `XC_EASY_INTEGRATION_TOKEN`.
+
+## Изоляция публикации и происхождение артефактов
+
+Настройки репозитория по умолчанию остаются read-only. Сборка имеет только `contents: read`. Отдельная job публикации скачивает артефакт по ID, проверяет его digest и создаёт GitHub attestations. Только она получает `contents: write`, `id-token: write`, `attestations: write`, `artifact-metadata: write`; код и скрипты пакета там не исполняются. GH_TOKEN передаётся только шагам gh. Pull request проверяет и собирает пакет, но не публикует релиз. Ручная публикация использует workflow main; релизный тег должен ссылаться на commit, достижимый из main.
+
+Будущие релизы из обновлённого workflow позволяют проверить происхождение командой `gh attestation verify ARCHIVE --repo qa-point/xceasy-runner --signer-workflow qa-point/xceasy-runner/.github/workflows/release.yml`. У существующего v0.1.1 таких attestations нет. Они не заменяют Apple Developer ID/notarization.
