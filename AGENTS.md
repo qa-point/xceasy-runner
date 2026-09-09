@@ -16,3 +16,4 @@ not complete.
 - Pin GitHub Actions to full commit SHAs. Keep packaging read-only and publication isolated; never restore a personal token requirement for public dependencies or disable macOS quarantine in installers.
 - Nix must build and install on both Darwin architectures in CI. Updating Nixpkgs requires evaluating both platforms and checking native builds; do not infer Intel support from an Apple Silicon build.
 - Developer ID signing, notarization, merge, and release publication must not be claimed without the corresponding completed operation and required authorization.
+- Verify installed commands from an unrelated directory through PATH and symlinks, including prefixes with spaces. An absolute-path check inside the source checkout can hide executable/runtime discovery defects.

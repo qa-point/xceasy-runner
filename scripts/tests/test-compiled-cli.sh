@@ -6,6 +6,22 @@ swift build --package-path "$repository_root" --configuration debug --product xc
 binary_path=$(swift build --package-path "$repository_root" --configuration debug --show-bin-path)
 cli="$binary_path/xceasyctl"
 
+stage=$(mktemp -d "${TMPDIR:-/tmp}/xceasy-cli-path.XXXXXX")
+trap 'rm -rf "$stage"' EXIT
+prefix="$stage/prefix with spaces"
+mkdir -p "$prefix/bin" "$prefix/libexec/xceasy-runner/bin" "$stage/links" "$stage/unrelated"
+cp "$cli" "$prefix/bin/xceasyctl"
+printf '#!/bin/sh\nprintf "installed engine\\n"\n' > "$prefix/libexec/xceasy-runner/bin/xceasy"
+chmod +x "$prefix/libexec/xceasy-runner/bin/xceasy"
+ln -s "$prefix/bin/xceasyctl" "$stage/links/xceasyctl"
+(
+    cd "$stage/unrelated"
+    unset XCEASY_RUNNER_ROOT
+    "$prefix/bin/xceasyctl" version | grep -qx 'installed engine'
+    ../links/xceasyctl version | grep -qx 'installed engine'
+    PATH="$stage/links:$PATH" /bin/zsh -f -c 'xceasyctl version' | grep -qx 'installed engine'
+)
+
 "$cli" version | grep -q '^xceasy-runner '
 "$cli" validate-config "$repository_root/examples/xceasy-runner.json" >/dev/null
 "$cli" help | grep -q '^Usage:'

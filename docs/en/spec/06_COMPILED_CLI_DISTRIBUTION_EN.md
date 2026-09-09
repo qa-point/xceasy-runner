@@ -8,6 +8,7 @@ English · [Русский](../../ru/spec/06_COMPILED_CLI_DISTRIBUTION_RU.md) ·
 - `make install PREFIX=/absolute/path` installs the binary and private engine.
 - `make package` creates a versioned `tar.gz` and SHA-256 checksum.
 - Runtime checks `XCEASY_RUNNER_ROOT`, installed `libexec`, then a source checkout.
+- Installed runtime discovery uses the loaded executable path, resolves symlinks, and works when the shell passes a bare command name through `PATH` from an unrelated directory.
 - `bin/xceasy` is not public API and remains a private compatibility engine.
 
 Installers preserve macOS quarantine instead of removing it. CI builds with read-only permissions; a separate job attests and publishes verified artifacts. Homebrew uses a checksummed universal release; Nix pins a reviewed stable Nixpkgs revision for both Darwin architectures. Apple Developer ID/notarization remain unconfigured without a signing identity.
